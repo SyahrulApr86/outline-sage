@@ -44,8 +44,12 @@ describe("ChatWindow integration", () => {
     await user.click(screen.getByRole("button", { name: "Kirim" }));
 
     await waitFor(() => {
-      expect(screen.getByText(/Jawaban lengkap \[chunk-1\]\./)).toBeInTheDocument();
+      expect(screen.getByText(/Jawaban lengkap/)).toBeInTheDocument();
     });
+
+    // Label [chunk-1] dirender jadi badge rujukan, bukan teks literal
+    const badge = screen.getByRole("link", { name: "1" });
+    expect(badge).toHaveAttribute("href", "#citation-1");
 
     expect(screen.getByTestId("citation-panel")).toBeInTheDocument();
     expect(screen.getByText(/Dokumen A/)).toBeInTheDocument();

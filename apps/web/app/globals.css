@@ -1,0 +1,151 @@
+@import "tailwindcss";
+
+/*
+  Design tokens dari DESIGN.md "Linear Precision Dark" (designmd.app),
+  dipilih karena outline-sage adalah developer tool teknis (chat internal
+  atas wiki Outline), cocok dengan estetika precision-engineered dark UI.
+*/
+@theme {
+  --color-bg: #08090a;
+  --color-panel: #0f1011;
+  --color-surface: #191a1b;
+
+  --color-text-primary: #f7f8f8;
+  --color-text-secondary: #d0d6e0;
+  --color-text-tertiary: #8a8f98;
+
+  --color-accent: #5e6ad2;
+  --color-accent-violet: #7170ff;
+  --color-accent-hover: #828fff;
+
+  --color-border-subtle: rgba(255, 255, 255, 0.05);
+  --color-border-standard: rgba(255, 255, 255, 0.08);
+
+  --font-sans: var(--font-inter), "Inter", system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), "JetBrains Mono", monospace;
+
+  --radius-base: 0.5rem;
+}
+
+/* Tema terang, dipilih lewat ThemeToggle, disimpan di localStorage */
+:root[data-theme="light"] {
+  --color-bg: #ffffff;
+  --color-panel: #f7f7f8;
+  --color-surface: #eef0f2;
+
+  --color-text-primary: #0b0c0d;
+  --color-text-secondary: #40454e;
+  --color-text-tertiary: #6b7280;
+
+  --color-border-subtle: rgba(0, 0, 0, 0.06);
+  --color-border-standard: rgba(0, 0, 0, 0.1);
+}
+
+html {
+  color-scheme: dark;
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  letter-spacing: -0.011em;
+}
+
+/* Markdown rendering isi jawaban chat (MessageContent) */
+.prose-chat p {
+  margin: 0 0 0.5rem 0;
+}
+.prose-chat p:last-child {
+  margin-bottom: 0;
+}
+.prose-chat ul,
+.prose-chat ol {
+  margin: 0.25rem 0 0.5rem 1.25rem;
+}
+.prose-chat li {
+  margin: 0.125rem 0;
+}
+.prose-chat strong {
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+.prose-chat code {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  background-color: var(--color-surface);
+  border-radius: 0.25rem;
+  padding: 0.125rem 0.375rem;
+}
+.prose-chat pre {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-base);
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+  margin: 0.5rem 0;
+}
+.prose-chat pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.8125rem;
+}
+.prose-chat a:not(.citation-badge) {
+  color: var(--color-accent-violet);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Badge rujukan inline [n] hasil linkifyCitations, jump ke panel rujukan */
+.citation-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.125rem;
+  height: 1.125rem;
+  padding: 0 0.25rem;
+  margin: 0 0.125rem;
+  border-radius: 9999px;
+  background-color: var(--color-accent);
+  color: white;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  vertical-align: super;
+}
+.citation-badge:hover {
+  background-color: var(--color-accent-hover);
+}
+
+/* Minimal highlight.js theme selaras token warna di atas (bukan tema hljs bawaan) */
+.hljs {
+  color: var(--color-text-primary);
+  background: none;
+}
+.hljs-keyword,
+.hljs-tag,
+.hljs-selector-tag {
+  color: var(--color-accent-violet);
+}
+.hljs-string,
+.hljs-attr {
+  color: #7ee6b0;
+}
+.hljs-number,
+.hljs-literal {
+  color: #f0b866;
+}
+.hljs-comment {
+  color: var(--color-text-tertiary);
+  font-style: italic;
+}
+.hljs-title,
+.hljs-name {
+  color: var(--color-accent-hover);
+}

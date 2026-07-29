@@ -2,15 +2,26 @@
 
 import { useState } from "react";
 import { ChatWindow } from "@/components/ChatWindow";
-import { ConversationSidebar } from "@/components/ConversationSidebar";
+import { ConversationSidebar, type SidebarUser } from "@/components/ConversationSidebar";
 
-export function ChatShell() {
+export function ChatShell({ user }: { user: SidebarUser }) {
   const [conversationId, setConversationId] = useState<string | undefined>(undefined);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <>
-      <ConversationSidebar onSelect={setConversationId} />
-      <ChatWindow conversationId={conversationId} key={conversationId ?? "new"} />
-    </>
+    <div className="flex h-screen bg-bg text-text-primary">
+      <ConversationSidebar
+        onSelect={setConversationId}
+        onNewConversation={() => setConversationId(undefined)}
+        user={user}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+      />
+      <ChatWindow
+        conversationId={conversationId}
+        key={conversationId ?? "new"}
+        onToggleSidebar={() => setIsSidebarOpen((open) => !open)}
+      />
+    </div>
   );
 }

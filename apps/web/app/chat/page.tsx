@@ -10,7 +10,7 @@ export default async function ChatPage() {
 
   return (
     <main>
-      <ChatShell />
+      <ChatShell user={{ name: session.user?.name ?? null, image: session.user?.image ?? null }} />
     </main>
   );
 }
