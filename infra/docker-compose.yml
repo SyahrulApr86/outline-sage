@@ -160,7 +160,7 @@ services:
   ################################
 
   outline-sage-tei-embed:
-    image: ghcr.io/huggingface/text-embeddings-inference:1.5
+    image: ghcr.io/huggingface/text-embeddings-inference:latest
     container_name: outline-sage-tei-embed
     restart: unless-stopped
     command: ["--model-id", "BAAI/bge-m3"]
@@ -181,7 +181,7 @@ services:
   ################################
 
   outline-sage-tei-rerank:
-    image: ghcr.io/huggingface/text-embeddings-inference:1.5
+    image: ghcr.io/huggingface/text-embeddings-inference:latest
     container_name: outline-sage-tei-rerank
     restart: unless-stopped
     command: ["--model-id", "BAAI/bge-reranker-v2-m3"]
