@@ -42,7 +42,15 @@ Daftarkan webhook Outline mengarah ke `http://<host>:8000/internal/webhooks/outl
 
 ## Catatan
 
-- Qdrant, Elasticsearch, dan Postgres metadata sage berbagi resource dengan bebas (tidak dibatasi eksplisit), volume disimpan di `./data/`.
+- Qdrant, Elasticsearch, dan Postgres metadata sage berbagi resource dengan bebas (tidak dibatasi eksplisit), volume disimpan di `./data/`. Elasticsearch butuh direktori data dimiliki uid 1000 (`docker run --rm -v ./data/elasticsearch:/data alpine chown -R 1000:1000 /data`), bukan root, kalau tidak ES gagal start dengan error node lock.
 - Redis outline-sage terpisah dari Redis Outline (instance sendiri), memakai `--notify-keyspace-events Ex` untuk debounce event-driven.
 - Sync Worker (`outline-sage-sync-worker`) dan API Service (`outline-sage-api`) adalah container terpisah dari image yang sama, supaya restart salah satu tidak mengganggu yang lain.
 - vLLM dan TEI (embedding, reranker) berbagi GPU yang sama (`device_ids: ["0"]`). Model dan quantization di `command:` masing-masing service bisa disesuaikan.
+- vLLM `--quantization awq` butuh checkpoint yang sudah di-AWQ-quantize sebelumnya (bukan checkpoint biasa). Dipakai `--quantization bitsandbytes --load-format bitsandbytes` supaya bisa kuantisasi on-the-fly dari checkpoint biasa seperti `Qwen/Qwen3-14B`.
+- Image TEI resmi (`ghcr.io/huggingface/text-embeddings-inference`) belum mendukung GPU Blackwell (compute capability 120, contoh RTX 5090 dan RTX PRO 4000 Blackwell) per pertengahan 2026 ([issue #640](https://github.com/huggingface/text-embeddings-inference/issues/640)). Kalau GPU host pakai arsitektur Blackwell, build image sendiri dari source:
+  ```bash
+  git clone --depth 1 https://github.com/huggingface/text-embeddings-inference.git
+  cd text-embeddings-inference
+  docker build -f Dockerfile-cuda --build-arg CUDA_COMPUTE_CAP=120 -t outline-sage-tei-blackwell:latest .
+  ```
+  lalu ganti `image:` di `outline-sage-tei-embed` dan `outline-sage-tei-rerank` ke `outline-sage-tei-blackwell:latest`. Build ini murni lokal (compile Rust + CUDA), makan waktu cukup lama, dan tidak di-push ke registry mana pun oleh workflow CI di repo ini.
