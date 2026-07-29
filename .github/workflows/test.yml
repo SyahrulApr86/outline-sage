@@ -21,7 +21,7 @@ jobs:
 
       - name: Run tests
         working-directory: apps/api
-        run: pytest -q
+        run: python -m pytest -q
 
   web:
     runs-on: ubuntu-latest
