@@ -9,7 +9,6 @@ apps/
   api/   # Backend Python (FastAPI): sync worker, hybrid retrieval, chat
   web/   # Frontend Next.js: chat UI, citation panel
 infra/   # docker-compose, deployment config
-docs/    # dokumen produk dan teknis
 ```
 
 Referensi arsitektur: [molyleaf/outline-rag](https://github.com/molyleaf/outline-rag) (Business Source License 1.1, tidak di-fork langsung). Deployment Outline yang jadi target integrasi: [docker-compose-collection/outline](https://github.com/SyahrulApr86/docker-compose-collection/tree/main/outline).
