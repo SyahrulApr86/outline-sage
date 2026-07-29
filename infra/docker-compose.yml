@@ -205,7 +205,7 @@ services:
     image: vllm/vllm-openai:latest
     container_name: outline-sage-vllm
     restart: unless-stopped
-    command: ["--model", "Qwen/Qwen3-14B", "--quantization", "bitsandbytes", "--load-format", "bitsandbytes", "--max-model-len", "8192"]
+    command: ["--model", "Qwen/Qwen3-14B", "--quantization", "bitsandbytes", "--load-format", "bitsandbytes", "--max-model-len", "8192", "--gpu-memory-utilization", "0.75"]
     volumes:
       - ./data/vllm:/root/.cache/huggingface
     deploy:
