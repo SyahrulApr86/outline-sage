@@ -4,6 +4,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import { linkifyCitations } from "@/lib/markdown";
+import { CodeBlock } from "@/components/CodeBlock";
 
 export function MessageContent({ content }: { content: string }) {
   return (
@@ -12,6 +13,7 @@ export function MessageContent({ content }: { content: string }) {
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeHighlight]}
         components={{
+          pre: CodeBlock,
           a: ({ href, children, ...props }) => {
             if (href?.startsWith("#citation-")) {
               return (
