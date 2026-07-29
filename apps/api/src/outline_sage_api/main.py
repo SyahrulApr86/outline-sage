@@ -1,7 +1,12 @@
-"""Entry point FastAPI: wiring seluruh komponen (HLD-001 bagian 2)."""
+"""Entry point FastAPI: API Service (HLD-001 bagian 2).
+
+Hanya melayani HTTP: webhook ingress dan chat. Pemrosesan sync (Redis
+Streams consumer, expiry listener) berjalan di proses terpisah lewat
+`worker_entrypoint.py`, supaya restart/scaling salah satu tidak
+mengganggu yang lain (HLD-001 bagian 4, FSD-003 pola isolasi restart).
+"""
 from __future__ import annotations
 
-import asyncio
 import logging
 from contextlib import asynccontextmanager
 
@@ -13,15 +18,12 @@ from outline_sage_api.api.webhook import webhook_router
 from outline_sage_api.auth import KeycloakAuthenticator
 from outline_sage_api.clients.es_client import ElasticsearchStore
 from outline_sage_api.clients.llm_client import LLMClient
-from outline_sage_api.clients.outline_client import OutlineClient
 from outline_sage_api.clients.qdrant_client import QdrantStore
 from outline_sage_api.clients.tei_client import TEIEmbeddingClient, TEIRerankerClient
 from outline_sage_api.config import get_settings
 from outline_sage_api.db import create_engine, create_session_factory, init_db
 from outline_sage_api.retrieval import HybridRetriever
 from outline_sage_api.sync.debounce import Debouncer
-from outline_sage_api.sync.expiry_listener import run_expiry_listener
-from outline_sage_api.sync.worker import SyncWorkerDeps, run_worker_loop
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +51,6 @@ async def lifespan(app: FastAPI):
     embedding_client = TEIEmbeddingClient(settings.tei_embedding_url)
     reranker_client = TEIRerankerClient(settings.tei_reranker_url)
     llm_client = LLMClient(settings.vllm_base_url, settings.chat_model_name)
-    outline_client = OutlineClient(settings.outline_api_url, settings.outline_api_token)
 
     app.state.retriever = HybridRetriever(
         qdrant,
@@ -63,29 +64,9 @@ async def lifespan(app: FastAPI):
     app.state.llm_client = llm_client
     app.state.authenticator = KeycloakAuthenticator(settings.keycloak_issuer, settings.keycloak_audience)
 
-    sync_deps = SyncWorkerDeps(
-        redis_client=redis_client,
-        session_factory=session_factory,
-        outline_client=outline_client,
-        embedding_client=embedding_client,
-        qdrant=qdrant,
-        es=es,
-        stream_name=settings.sync_stream_name,
-        consumer_group=settings.sync_consumer_group,
-        consumer_name="worker-1",
-    )
-
-    background_tasks = [
-        asyncio.create_task(run_expiry_listener(redis_client, app.state.debouncer, settings.sync_stream_name)),
-        asyncio.create_task(run_worker_loop(sync_deps)),
-    ]
-
-    logger.info("outline-sage API started")
+    logger.info("outline-sage API Service started")
     yield
 
-    for task in background_tasks:
-        task.cancel()
-    await asyncio.gather(*background_tasks, return_exceptions=True)
     await redis_client.close()
     await qdrant.close()
     await es.close()
