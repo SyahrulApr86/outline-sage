@@ -23,13 +23,13 @@ class ElasticsearchStore:
         except NotFoundError:
             pass
 
-    async def search(self, query: str, top_k: int) -> list[tuple[str, float]]:
+    async def search(self, query: str, top_k: int) -> list[tuple[str, float, dict]]:
         resp = await self._client.search(
             index=self._index,
             query={"match": {"content": query}},
             size=top_k,
         )
-        return [(hit["_id"], hit["_score"]) for hit in resp["hits"]["hits"]]
+        return [(hit["_id"], hit["_score"], hit["_source"]) for hit in resp["hits"]["hits"]]
 
     async def close(self) -> None:
         await self._client.close()

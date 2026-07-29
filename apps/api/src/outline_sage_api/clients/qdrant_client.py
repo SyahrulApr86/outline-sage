@@ -36,13 +36,14 @@ class QdrantStore:
             points_selector=models.PointIdsList(points=point_ids),
         )
 
-    async def search(self, vector: list[float], top_k: int) -> list[tuple[str, float]]:
+    async def search(self, vector: list[float], top_k: int) -> list[tuple[str, float, dict]]:
         results = await self._client.query_points(
             collection_name=self._collection,
             query=vector,
             limit=top_k,
+            with_payload=True,
         )
-        return [(str(point.id), point.score) for point in results.points]
+        return [(str(point.id), point.score, point.payload or {}) for point in results.points]
 
     async def close(self) -> None:
         await self._client.close()
