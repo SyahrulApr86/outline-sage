@@ -1,0 +1,223 @@
+services:
+
+  ################################
+  # API Service (chat, webhook ingress)
+  ################################
+
+  outline-sage-api:
+    build:
+      context: ../apps/api
+    container_name: outline-sage-api
+    restart: unless-stopped
+    depends_on:
+      outline-sage-postgres:
+        condition: service_healthy
+      outline-sage-redis:
+        condition: service_started
+      outline-sage-qdrant:
+        condition: service_started
+      outline-sage-elasticsearch:
+        condition: service_started
+    environment:
+      SAGE_DATABASE_URL: postgresql+asyncpg://${SAGE_POSTGRES_USER:-sage}:${SAGE_POSTGRES_PASSWORD:-sage}@outline-sage-postgres:5432/${SAGE_POSTGRES_DB:-sage}
+      SAGE_REDIS_URL: redis://outline-sage-redis:6379/0
+      SAGE_QDRANT_URL: http://outline-sage-qdrant:6333
+      SAGE_ELASTICSEARCH_URL: http://outline-sage-elasticsearch:9200
+      SAGE_TEI_EMBEDDING_URL: http://outline-sage-tei-embed:80
+      SAGE_TEI_RERANKER_URL: http://outline-sage-tei-rerank:80
+      SAGE_VLLM_BASE_URL: http://outline-sage-vllm:8000/v1
+      SAGE_OUTLINE_API_URL: ${OUTLINE_API_URL:?set to the existing Outline deployment URL}
+      SAGE_OUTLINE_API_TOKEN: ${OUTLINE_API_TOKEN:?set from Outline API token settings}
+      SAGE_OUTLINE_WEBHOOK_SECRET: ${OUTLINE_WEBHOOK_SECRET:?set matching the Outline webhook config}
+      SAGE_KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER:?set to the existing Keycloak realm issuer}
+      SAGE_KEYCLOAK_AUDIENCE: ${SAGE_KEYCLOAK_CLIENT_ID:-outline-sage}
+    ports:
+      - "127.0.0.1:8000:8000"
+    networks:
+      - outline-sage
+
+  ################################
+  # Sync Worker (proses terpisah dari API Service, HLD-001 bagian 4)
+  ################################
+
+  outline-sage-sync-worker:
+    build:
+      context: ../apps/api
+    container_name: outline-sage-sync-worker
+    restart: unless-stopped
+    command: ["python", "-m", "outline_sage_api.worker_entrypoint"]
+    depends_on:
+      outline-sage-postgres:
+        condition: service_healthy
+      outline-sage-redis:
+        condition: service_started
+      outline-sage-qdrant:
+        condition: service_started
+      outline-sage-elasticsearch:
+        condition: service_started
+    environment:
+      SAGE_DATABASE_URL: postgresql+asyncpg://${SAGE_POSTGRES_USER:-sage}:${SAGE_POSTGRES_PASSWORD:-sage}@outline-sage-postgres:5432/${SAGE_POSTGRES_DB:-sage}
+      SAGE_REDIS_URL: redis://outline-sage-redis:6379/0
+      SAGE_QDRANT_URL: http://outline-sage-qdrant:6333
+      SAGE_ELASTICSEARCH_URL: http://outline-sage-elasticsearch:9200
+      SAGE_TEI_EMBEDDING_URL: http://outline-sage-tei-embed:80
+      SAGE_OUTLINE_API_URL: ${OUTLINE_API_URL:?set to the existing Outline deployment URL}
+      SAGE_OUTLINE_API_TOKEN: ${OUTLINE_API_TOKEN:?set from Outline API token settings}
+    networks:
+      - outline-sage
+
+  ################################
+  # Web App (Next.js chat UI)
+  ################################
+
+  outline-sage-web:
+    build:
+      context: ../apps/web
+    container_name: outline-sage-web
+    restart: unless-stopped
+    depends_on:
+      - outline-sage-api
+    environment:
+      API_SERVICE_URL: http://outline-sage-api:8000
+      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER:?set to the existing Keycloak realm issuer}
+      KEYCLOAK_CLIENT_ID: ${SAGE_KEYCLOAK_CLIENT_ID:-outline-sage}
+      KEYCLOAK_CLIENT_SECRET: ${SAGE_KEYCLOAK_CLIENT_SECRET:?set from Keycloak client credentials}
+      AUTH_SECRET: "${SAGE_AUTH_SECRET:?generate with openssl rand -hex 32}"
+      NEXTAUTH_URL: ${SAGE_PUBLIC_URL:-http://localhost:3001}
+    ports:
+      - "127.0.0.1:3001:3000"
+    networks:
+      - outline-sage
+
+  ################################
+  # Postgres metadata sage (tanpa pgvector, vector disimpan di Qdrant)
+  ################################
+
+  outline-sage-postgres:
+    image: postgres:16-alpine
+    container_name: outline-sage-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${SAGE_POSTGRES_USER:-sage}
+      POSTGRES_PASSWORD: ${SAGE_POSTGRES_PASSWORD:-sage}
+      POSTGRES_DB: ${SAGE_POSTGRES_DB:-sage}
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${SAGE_POSTGRES_USER:-sage} -d ${SAGE_POSTGRES_DB:-sage}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - outline-sage
+
+  ################################
+  # Redis Streams sage (terpisah dari Redis Outline, HLD-001 bagian 3)
+  ################################
+
+  outline-sage-redis:
+    image: redis:7-alpine
+    container_name: outline-sage-redis
+    restart: unless-stopped
+    command: ["redis-server", "--notify-keyspace-events", "Ex", "--appendonly", "yes"]
+    volumes:
+      - ./data/redis:/data
+    networks:
+      - outline-sage
+
+  ################################
+  # Qdrant (dense vector store)
+  ################################
+
+  outline-sage-qdrant:
+    image: qdrant/qdrant:latest
+    container_name: outline-sage-qdrant
+    restart: unless-stopped
+    volumes:
+      - ./data/qdrant:/qdrant/storage
+    networks:
+      - outline-sage
+
+  ################################
+  # Elasticsearch (sparse/BM25 index)
+  ################################
+
+  outline-sage-elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    container_name: outline-sage-elasticsearch
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: "-Xms1g -Xmx1g"
+    volumes:
+      - ./data/elasticsearch:/usr/share/elasticsearch/data
+    networks:
+      - outline-sage
+
+  ################################
+  # TEI: embedding (BAAI/bge-m3)
+  ################################
+
+  outline-sage-tei-embed:
+    image: ghcr.io/huggingface/text-embeddings-inference:1.5
+    container_name: outline-sage-tei-embed
+    restart: unless-stopped
+    command: ["--model-id", "BAAI/bge-m3"]
+    volumes:
+      - ./data/tei-embed:/data
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["0"]
+              capabilities: [gpu]
+    networks:
+      - outline-sage
+
+  ################################
+  # TEI: reranker (BAAI/bge-reranker-v2-m3)
+  ################################
+
+  outline-sage-tei-rerank:
+    image: ghcr.io/huggingface/text-embeddings-inference:1.5
+    container_name: outline-sage-tei-rerank
+    restart: unless-stopped
+    command: ["--model-id", "BAAI/bge-reranker-v2-m3"]
+    volumes:
+      - ./data/tei-rerank:/data
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["0"]
+              capabilities: [gpu]
+    networks:
+      - outline-sage
+
+  ################################
+  # vLLM: chat (Qwen3-14B, Q4)
+  ################################
+
+  outline-sage-vllm:
+    image: vllm/vllm-openai:latest
+    container_name: outline-sage-vllm
+    restart: unless-stopped
+    command: ["--model", "Qwen/Qwen3-14B", "--quantization", "awq", "--max-model-len", "8192"]
+    volumes:
+      - ./data/vllm:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["0"]
+              capabilities: [gpu]
+    networks:
+      - outline-sage
+
+networks:
+  outline-sage:
+    driver: bridge
