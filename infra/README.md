@@ -22,11 +22,21 @@ Isi `.env`:
 - `SAGE_AUTH_SECRET` — `openssl rand -hex 32`.
 - `SAGE_PUBLIC_URL` — alamat publik Web App.
 
-Jalankan:
+Jalankan (build dari source):
 
 ```bash
 docker compose up -d --build
 ```
+
+Atau pakai image yang sudah di-build lewat CI ke GHCR (tidak perlu clone/build source sama sekali, tinggal `.env` dan dua file compose ini):
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.images.yml up -d
+```
+
+Image di-build otomatis oleh `.github/workflows/docker-publish.yml` tiap push ke `main`, tersedia di:
+- `ghcr.io/syahrulapr86/outline-sage-api:main`
+- `ghcr.io/syahrulapr86/outline-sage-web:main`
 
 Daftarkan webhook Outline mengarah ke `http://<host>:8000/internal/webhooks/outline` setelah `outline-sage-api` sehat.
 

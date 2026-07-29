@@ -1,0 +1,12 @@
+services:
+  outline-sage-api:
+    build: !reset null
+    image: ghcr.io/syahrulapr86/outline-sage-api:main
+
+  outline-sage-sync-worker:
+    build: !reset null
+    image: ghcr.io/syahrulapr86/outline-sage-api:main
+
+  outline-sage-web:
+    build: !reset null
+    image: ghcr.io/syahrulapr86/outline-sage-web:main
