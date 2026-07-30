@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import logging
 import time
 
 import httpx
 from jose import jwt
 from jose.exceptions import JOSEError
+
+logger = logging.getLogger(__name__)
 
 
 class KeycloakAuthenticator:
@@ -41,5 +44,6 @@ class KeycloakAuthenticator:
                 options={"require_exp": True},
             )
         except JOSEError as exc:
+            logger.warning("token verification failed: %s", exc)
             raise ValueError(f"invalid token: {exc}") from exc
         return payload
