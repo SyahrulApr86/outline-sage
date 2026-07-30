@@ -3,6 +3,10 @@ import type { NextAuthConfig, Session } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 
 const config: NextAuthConfig = {
+  // Wajib saat deploy di belakang reverse proxy (NPM, nginx, dll): tanpa ini
+  // Auth.js menolak Host header yang diteruskan proxy sebagai UntrustedHost,
+  // dan gagal dengan error konfigurasi di /api/auth/session dan /signin.
+  trustHost: true,
   providers: [
     {
       id: "keycloak",
