@@ -6,7 +6,9 @@ import { CitationPanel } from "@/components/CitationPanel";
 import { MessageContent } from "@/components/MessageContent";
 import { ChatHeader } from "@/components/ChatHeader";
 import { ThinkingIndicator } from "@/components/ThinkingIndicator";
+import { ThinkingBlock } from "@/components/ThinkingBlock";
 import { CopyButton } from "@/components/CopyButton";
+import { splitThinking } from "@/lib/think";
 
 const SCROLL_BOTTOM_THRESHOLD_PX = 80;
 const TEXTAREA_MAX_HEIGHT_PX = 200;
@@ -78,6 +80,8 @@ export function ChatWindow({
             const isLast = index === messages.length - 1;
             const isEmptyStreamingAssistant =
               message.role === "assistant" && message.content === "" && isStreaming && isLast;
+            const split = message.role === "assistant" ? splitThinking(message.content) : null;
+            const liveThinking = isLast && isStreaming;
 
             return (
               <div
@@ -97,16 +101,22 @@ export function ChatWindow({
                     isEmptyStreamingAssistant ? (
                       <ThinkingIndicator />
                     ) : (
-                      <MessageContent content={message.content} />
+                      <>
+                        <ThinkingBlock
+                          thinking={split!.thinking}
+                          isThinking={split!.isThinking && liveThinking}
+                        />
+                        <MessageContent content={split!.answer} />
+                      </>
                     )
                   ) : (
                     <p className="whitespace-pre-wrap">{message.content}</p>
                   )}
                   {message.role === "assistant" && <CitationPanel citations={message.citations} />}
                 </div>
-                {message.role === "assistant" && message.content && (
+                {message.role === "assistant" && split?.answer && (
                   <div className="mt-1 px-1">
-                    <CopyButton text={message.content} />
+                    <CopyButton text={split.answer} />
                   </div>
                 )}
               </div>
