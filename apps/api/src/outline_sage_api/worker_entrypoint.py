@@ -31,7 +31,10 @@ async def main() -> None:
     engine = create_engine(settings.database_url)
     session_factory = create_session_factory(engine)
 
-    redis_client = redis.from_url(settings.redis_url, decode_responses=True)
+    # socket_timeout harus lebih besar dari BLOCK milidetik dipakai XREADGROUP
+    # di run_worker_loop, kalau tidak client timeout duluan sebelum server
+    # selesai menunggu (bukan error, tapi bikin worker crash loop tiap siklus poll).
+    redis_client = redis.from_url(settings.redis_url, decode_responses=True, socket_timeout=15)
     debouncer = Debouncer(redis_client, settings.debounce_window_seconds)
 
     qdrant = QdrantStore(settings.qdrant_url, settings.qdrant_collection, settings.vector_dim)
