@@ -22,7 +22,10 @@ export function ChatWindow({
   onConversationId?: (id: string) => void;
   onToggleSidebar?: () => void;
 }) {
-  const { messages, sendMessage, isStreaming, error } = useChatStream(conversationId, onConversationId);
+  const { messages, sendMessage, isStreaming, isLoadingHistory, error } = useChatStream(
+    conversationId,
+    onConversationId
+  );
   const [input, setInput] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -72,7 +75,12 @@ export function ChatWindow({
         data-testid="message-list"
         className="flex-1 overflow-y-auto px-6 py-6"
       >
-        {messages.length === 0 && (
+        {isLoadingHistory && (
+          <div className="flex h-full items-center justify-center text-sm text-text-tertiary">
+            Memuat percakapan…
+          </div>
+        )}
+        {!isLoadingHistory && messages.length === 0 && (
           <div className="flex h-full items-center justify-center text-sm text-text-tertiary">
             Tanya apa saja tentang isi wiki.
           </div>

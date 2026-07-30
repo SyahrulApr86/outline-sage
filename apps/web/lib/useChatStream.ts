@@ -1,14 +1,35 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { ChatMessage } from "./chat-types";
 import { applyStreamEvent, parseSSELine } from "./sse";
 
 export function useChatStream(conversationId?: string, onConversationId?: (id: string) => void) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(!!conversationId);
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    if (!conversationId) return;
+    let cancelled = false;
+    setIsLoadingHistory(true);
+    fetch(`/api/conversations/${conversationId}`)
+      .then((resp) => (resp.ok ? resp.json() : []))
+      .then((data: ChatMessage[]) => {
+        if (!cancelled) setMessages(data);
+      })
+      .catch(() => {
+        if (!cancelled) setMessages([]);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingHistory(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [conversationId]);
 
   const sendMessage = useCallback(
     async (text: string) => {
@@ -68,5 +89,5 @@ export function useChatStream(conversationId?: string, onConversationId?: (id: s
     abortRef.current?.abort();
   }, []);
 
-  return { messages, sendMessage, isStreaming, error, stop };
+  return { messages, sendMessage, isStreaming, isLoadingHistory, error, stop };
 }
