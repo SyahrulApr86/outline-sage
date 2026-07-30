@@ -47,3 +47,29 @@ class OutlineClient:
             if resp.status_code != 200:
                 return []
             return resp.json().get("data", [])
+
+    async def list_all_document_ids(self) -> list[str]:
+        collections = await self.list_collections()
+        doc_ids: dict[str, None] = {}
+        async with _build_client() as client:
+            for collection in collections:
+                collection_id = collection.get("id")
+                if not collection_id:
+                    continue
+                offset = 0
+                while True:
+                    resp = await client.post(
+                        f"{self._base_url}/api/documents.list",
+                        json={"collectionId": collection_id, "limit": 100, "offset": offset},
+                        headers=self._headers,
+                    )
+                    if resp.status_code != 200:
+                        break
+                    docs = resp.json().get("data", [])
+                    for doc in docs:
+                        if doc.get("id"):
+                            doc_ids[doc["id"]] = None
+                    if len(docs) < 100:
+                        break
+                    offset += 100
+        return list(doc_ids.keys())
