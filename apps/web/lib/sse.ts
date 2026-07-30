@@ -27,7 +27,7 @@ export function applyStreamEvent(messages: ChatMessage[], event: ChatStreamEvent
   if (event.type === "text-delta") {
     next[lastIndex] = { ...last, content: last.content + event.delta };
   } else if (event.type === "data-citation") {
-    next[lastIndex] = { ...last, citations: event.citations };
+    next[lastIndex] = { ...last, citations: event.citations, additionalCitations: event.additional };
   }
 
   return next;

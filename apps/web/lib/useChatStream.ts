@@ -4,7 +4,7 @@ import { useCallback, useRef, useState } from "react";
 import type { ChatMessage } from "./chat-types";
 import { applyStreamEvent, parseSSELine } from "./sse";
 
-export function useChatStream(conversationId?: string) {
+export function useChatStream(conversationId?: string, onConversationId?: (id: string) => void) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,6 +46,10 @@ export function useChatStream(conversationId?: string) {
           for (const line of lines) {
             const event = parseSSELine(line);
             if (!event) continue;
+            if (event.type === "data-conversation") {
+              onConversationId?.(event.conversation_id);
+              continue;
+            }
             setMessages((prev) => applyStreamEvent(prev, event));
           }
         }
@@ -57,7 +61,7 @@ export function useChatStream(conversationId?: string) {
         setIsStreaming(false);
       }
     },
-    [conversationId]
+    [conversationId, onConversationId]
   );
 
   const stop = useCallback(() => {

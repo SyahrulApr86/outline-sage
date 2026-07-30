@@ -16,12 +16,16 @@ export interface SidebarUser {
 }
 
 export function ConversationSidebar({
+  activeId,
+  refreshSignal,
   onSelect,
   onNewConversation,
   user,
   isOpen,
   onClose,
 }: {
+  activeId?: string;
+  refreshSignal?: number;
   onSelect: (id: string) => void;
   onNewConversation: () => void;
   user: SidebarUser;
@@ -29,7 +33,6 @@ export function ConversationSidebar({
   onClose: () => void;
 }) {
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
-  const [activeId, setActiveId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     let cancelled = false;
@@ -44,7 +47,7 @@ export function ConversationSidebar({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [refreshSignal]);
 
   const initial = (user.name ?? "?").trim().charAt(0).toUpperCase() || "?";
 
@@ -74,7 +77,6 @@ export function ConversationSidebar({
           <button
             type="button"
             onClick={() => {
-              setActiveId(undefined);
               onNewConversation();
               onClose();
             }}
@@ -91,7 +93,6 @@ export function ConversationSidebar({
                 <button
                   type="button"
                   onClick={() => {
-                    setActiveId(conversation.id);
                     onSelect(conversation.id);
                     onClose();
                   }}

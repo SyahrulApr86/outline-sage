@@ -10,6 +10,7 @@ export interface ChatMessage {
   role: "user" | "assistant";
   content: string;
   citations?: Citation[];
+  additionalCitations?: Citation[];
 }
 
 export interface TextDeltaEvent {
@@ -20,6 +21,12 @@ export interface TextDeltaEvent {
 export interface CitationEvent {
   type: "data-citation";
   citations: Citation[];
+  additional?: Citation[];
 }
 
-export type ChatStreamEvent = TextDeltaEvent | CitationEvent;
+export interface ConversationEvent {
+  type: "data-conversation";
+  conversation_id: string;
+}
+
+export type ChatStreamEvent = TextDeltaEvent | CitationEvent | ConversationEvent;

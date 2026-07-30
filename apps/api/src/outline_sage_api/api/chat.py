@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 
 from outline_sage_api.auth import KeycloakAuthenticator
-from outline_sage_api.citations import extract_citations
+from outline_sage_api.citations import extract_citations, uncited_chunks
 from outline_sage_api.conversations import ConversationRepository
 from outline_sage_api.prompt import build_messages
 from outline_sage_api.retrieval import HybridRetriever
@@ -71,7 +71,17 @@ async def chat(request: Request, user: dict = Depends(get_current_user)):
     chunks = await retriever.retrieve(query)
     messages, chunk_map = build_messages(query, chunks)
 
+    async with session_factory() as session:
+        async with session.begin():
+            repo = ConversationRepository(session)
+            conversation = await repo.get_or_create(conversation_id, user["id"])
+            if not conversation.title:
+                conversation.title = query[:60]
+        conv_id = conversation.id
+
     async def event_stream():
+        yield f"data: {json.dumps({'type': 'data-conversation', 'conversation_id': str(conv_id)})}\n\n"
+
         answer_parts: list[str] = []
         async for token in llm_client.stream_chat(messages):
             answer_parts.append(token)
@@ -79,14 +89,14 @@ async def chat(request: Request, user: dict = Depends(get_current_user)):
 
         full_answer = "".join(answer_parts)
         citations = extract_citations(full_answer, chunk_map)
-        yield f"data: {json.dumps({'type': 'data-citation', 'citations': citations})}\n\n"
+        additional = uncited_chunks(full_answer, chunk_map)
+        yield f"data: {json.dumps({'type': 'data-citation', 'citations': citations, 'additional': additional})}\n\n"
         yield "data: [DONE]\n\n"
 
         async with session_factory() as session:
             async with session.begin():
                 repo = ConversationRepository(session)
-                conversation = await repo.get_or_create(conversation_id, user["id"])
-                await repo.add_message(conversation.id, "user", query)
-                await repo.add_message(conversation.id, "assistant", full_answer, citations)
+                await repo.add_message(conv_id, "user", query)
+                await repo.add_message(conv_id, "assistant", full_answer, citations)
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")

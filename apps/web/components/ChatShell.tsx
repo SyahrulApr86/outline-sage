@@ -6,20 +6,34 @@ import { ConversationSidebar, type SidebarUser } from "@/components/Conversation
 
 export function ChatShell({ user }: { user: SidebarUser }) {
   const [conversationId, setConversationId] = useState<string | undefined>(undefined);
+  const [resetKey, setResetKey] = useState(0);
+  const [refreshSignal, setRefreshSignal] = useState(0);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
     <div className="flex h-screen bg-bg text-text-primary">
       <ConversationSidebar
-        onSelect={setConversationId}
-        onNewConversation={() => setConversationId(undefined)}
+        activeId={conversationId}
+        refreshSignal={refreshSignal}
+        onSelect={(id) => {
+          setConversationId(id);
+          setResetKey((k) => k + 1);
+        }}
+        onNewConversation={() => {
+          setConversationId(undefined);
+          setResetKey((k) => k + 1);
+        }}
         user={user}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
       />
       <ChatWindow
         conversationId={conversationId}
-        key={conversationId ?? "new"}
+        key={resetKey}
+        onConversationId={(id) => {
+          setConversationId(id);
+          setRefreshSignal((s) => s + 1);
+        }}
         onToggleSidebar={() => setIsSidebarOpen((open) => !open)}
       />
     </div>

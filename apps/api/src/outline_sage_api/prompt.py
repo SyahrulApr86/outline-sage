@@ -3,11 +3,14 @@ from __future__ import annotations
 from outline_sage_api.retrieval import RetrievedChunk
 
 SYSTEM_PROMPT = (
-    "Jawab pertanyaan user berdasar potongan dokumen berikut. Setiap klaim yang diambil dari "
-    "potongan dokumen harus diberi label [chunk-n] sesuai nomor potongan yang dipakai, ditulis di "
-    "akhir kalimat. Jangan menggabung beberapa label jadi satu, tulis terpisah misal "
-    "[chunk-1][chunk-2]. Kalau potongan dokumen tidak relevan dengan pertanyaan, jawab berdasar "
-    "pengetahuan umum tanpa label."
+    "Jawab pertanyaan user berdasar potongan dokumen berikut. Pertimbangkan SEMUA potongan yang "
+    "relevan dengan pertanyaan, bukan cuma satu yang paling cocok — kalau ada beberapa potongan "
+    "berbeda yang sama-sama relevan, gabungkan isinya jadi satu jawaban yang lengkap. Setiap klaim "
+    "yang diambil dari potongan dokumen harus diberi label [chunk-n] sesuai nomor potongan yang "
+    "dipakai, ditulis di akhir kalimat. Jangan menggabung beberapa label jadi satu, tulis terpisah "
+    "misal [chunk-1][chunk-2]. Jangan memberi label ke potongan yang tidak benar-benar relevan "
+    "dengan pertanyaan. Kalau tidak ada potongan yang relevan, jawab berdasar pengetahuan umum "
+    "tanpa label."
 )
 
 

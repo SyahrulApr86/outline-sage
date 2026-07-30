@@ -15,12 +15,14 @@ const TEXTAREA_MAX_HEIGHT_PX = 200;
 
 export function ChatWindow({
   conversationId,
+  onConversationId,
   onToggleSidebar = () => {},
 }: {
   conversationId?: string;
+  onConversationId?: (id: string) => void;
   onToggleSidebar?: () => void;
 }) {
-  const { messages, sendMessage, isStreaming, error } = useChatStream(conversationId);
+  const { messages, sendMessage, isStreaming, error } = useChatStream(conversationId, onConversationId);
   const [input, setInput] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -112,7 +114,12 @@ export function ChatWindow({
                   ) : (
                     <p className="whitespace-pre-wrap">{message.content}</p>
                   )}
-                  {message.role === "assistant" && <CitationPanel citations={message.citations} />}
+                  {message.role === "assistant" && (
+                    <CitationPanel
+                      citations={message.citations}
+                      additionalCitations={message.additionalCitations}
+                    />
+                  )}
                 </div>
                 {message.role === "assistant" && split?.answer && (
                   <div className="mt-1 px-1">

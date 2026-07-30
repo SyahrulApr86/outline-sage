@@ -18,3 +18,9 @@ def extract_citations(answer_text: str, chunk_map: dict[int, dict[str, Any]]) ->
         seen.add(n)
         citations.append(chunk_map[n])
     return citations
+
+
+def uncited_chunks(answer_text: str, chunk_map: dict[int, dict[str, Any]]) -> list[dict[str, Any]]:
+    """Chunk yang ikut di-retrieve tapi tidak disebut LLM di jawaban."""
+    cited = {int(match.group(1)) for match in _CITATION_RE.finditer(answer_text)}
+    return [chunk_map[n] for n in chunk_map if n not in cited]

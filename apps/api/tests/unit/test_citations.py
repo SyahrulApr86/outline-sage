@@ -1,4 +1,4 @@
-from outline_sage_api.citations import extract_citations
+from outline_sage_api.citations import extract_citations, uncited_chunks
 
 CHUNK_MAP = {
     1: {"chunk_id": "c1", "title": "Dokumen A"},
@@ -30,5 +30,19 @@ def test_duplicate_citation_label_counted_once():
 def test_no_citation_label_returns_empty_list():
     answer = "Jawaban tanpa rujukan sama sekali."
     result = extract_citations(answer, CHUNK_MAP)
+
+    assert result == []
+
+
+def test_uncited_chunks_returns_chunks_llm_did_not_reference():
+    answer = "Fakta pertama [chunk-1]."
+    result = uncited_chunks(answer, CHUNK_MAP)
+
+    assert result == [CHUNK_MAP[2]]
+
+
+def test_uncited_chunks_empty_when_all_referenced():
+    answer = "[chunk-1] dan [chunk-2] sama-sama dipakai."
+    result = uncited_chunks(answer, CHUNK_MAP)
 
     assert result == []
