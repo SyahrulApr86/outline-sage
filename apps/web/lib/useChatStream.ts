@@ -10,9 +10,11 @@ export function useChatStream(conversationId?: string, onConversationId?: (id: s
   const [isLoadingHistory, setIsLoadingHistory] = useState(!!conversationId);
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const selfAssignedIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!conversationId) return;
+    if (selfAssignedIdRef.current === conversationId) return;
     let cancelled = false;
     setIsLoadingHistory(true);
     fetch(`/api/conversations/${conversationId}`)
@@ -68,6 +70,7 @@ export function useChatStream(conversationId?: string, onConversationId?: (id: s
             const event = parseSSELine(line);
             if (!event) continue;
             if (event.type === "data-conversation") {
+              selfAssignedIdRef.current = event.conversation_id;
               onConversationId?.(event.conversation_id);
               continue;
             }
