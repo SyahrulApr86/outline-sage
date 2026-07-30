@@ -1,8 +1,3 @@
-"""Dengar Redis keyspace expiry, XADD ke stream saat window debounce berakhir.
-
-Event-driven, menggantikan pola polling tiap 5 detik di referensi arsitektur
-(TSD-001 bagian 6, Expiry Listener).
-"""
 from __future__ import annotations
 
 import logging

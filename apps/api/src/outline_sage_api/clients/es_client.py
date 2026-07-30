@@ -1,4 +1,3 @@
-"""Wrapper Elasticsearch untuk sparse/BM25 index (TSD-001/TSD-002)."""
 from __future__ import annotations
 
 from elasticsearch import AsyncElasticsearch, NotFoundError

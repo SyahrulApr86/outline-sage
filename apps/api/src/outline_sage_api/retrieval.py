@@ -1,4 +1,3 @@
-"""Hybrid retrieval: dense (Qdrant) + sparse (Elasticsearch) + RRF + rerank (TSD-002 bagian 6)."""
 from __future__ import annotations
 
 import asyncio

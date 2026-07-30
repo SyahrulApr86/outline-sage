@@ -1,4 +1,3 @@
-"""Prompt Builder: susun context dari chunk terpilih (TSD-002 bagian 6)."""
 from __future__ import annotations
 
 from outline_sage_api.retrieval import RetrievedChunk

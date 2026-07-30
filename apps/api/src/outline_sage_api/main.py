@@ -1,10 +1,3 @@
-"""Entry point FastAPI: API Service (HLD-001 bagian 2).
-
-Hanya melayani HTTP: webhook ingress dan chat. Pemrosesan sync (Redis
-Streams consumer, expiry listener) berjalan di proses terpisah lewat
-`worker_entrypoint.py`, supaya restart/scaling salah satu tidak
-mengganggu yang lain (HLD-001 bagian 4, FSD-003 pola isolasi restart).
-"""
 from __future__ import annotations
 
 import logging

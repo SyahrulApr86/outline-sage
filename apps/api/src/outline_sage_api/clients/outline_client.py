@@ -1,4 +1,3 @@
-"""Klien Outline REST API dengan retry (TSD-001 bagian 7)."""
 from __future__ import annotations
 
 import httpx

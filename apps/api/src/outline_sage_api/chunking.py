@@ -1,4 +1,3 @@
-"""Markdown-aware chunking (TSD-001 bagian 6)."""
 from __future__ import annotations
 
 import re
@@ -93,11 +92,7 @@ def chunk_document(
     chunk_overlap: int = DEFAULT_CHUNK_OVERLAP,
     separators: tuple[str, ...] = DEFAULT_SEPARATORS,
 ) -> list[Chunk]:
-    """Split per heading Markdown dulu, section yang masih kebesaran dipecah lagi per karakter.
-
-    Tiap chunk diberi prefix judul dokumen dan judul section terdekat (context injection),
-    lebih detail dibanding referensi arsitektur yang hanya prepend judul dokumen.
-    """
+    """Split per heading Markdown dulu, section yang masih kebesaran dipecah lagi per karakter."""
     if not content or not content.strip():
         return []
 

@@ -1,4 +1,3 @@
-"""Sync Worker: consumer group Redis Streams yang memproses event sync (TSD-001 bagian 6)."""
 from __future__ import annotations
 
 import logging
@@ -193,7 +192,6 @@ async def _handle_upsert(deps: SyncWorkerDeps, doc_id: str) -> None:
 
 
 async def run_worker_loop(deps: SyncWorkerDeps, *, block_ms: int = 5000) -> None:
-    """Loop utama consumer group. Diberhentikan lewat cancellation task asyncio."""
     await ensure_consumer_group(deps)
     while True:
         response = await deps.redis_client.xreadgroup(

@@ -1,4 +1,3 @@
-"""Endpoint webhook Outline (FR-01/FR-02, TSD-001 bagian 5 & 6)."""
 from __future__ import annotations
 
 import logging

@@ -1,4 +1,3 @@
-"""Wrapper Qdrant untuk dense vector store (TSD-001/TSD-002)."""
 from __future__ import annotations
 
 from qdrant_client import AsyncQdrantClient, models

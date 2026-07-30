@@ -1,9 +1,5 @@
 import type { ChatMessage, ChatStreamEvent } from "./chat-types";
 
-/**
- * Parse satu baris SSE dari backend API Service. Return null untuk baris
- * kosong, [DONE], atau baris yang bukan event data.
- */
 export function parseSSELine(line: string): ChatStreamEvent | null {
   if (!line.startsWith("data: ")) {
     return null;
@@ -19,10 +15,7 @@ export function parseSSELine(line: string): ChatStreamEvent | null {
   }
 }
 
-/**
- * Terapkan satu event stream ke pesan assistant terakhir (immutable update).
- * Dipisah dari hook supaya bisa diuji tanpa DOM/fetch.
- */
+// Dipisah dari hook supaya bisa diuji tanpa DOM/fetch.
 export function applyStreamEvent(messages: ChatMessage[], event: ChatStreamEvent): ChatMessage[] {
   if (messages.length === 0) {
     return messages;

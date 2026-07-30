@@ -1,4 +1,3 @@
-"""Async database engine dan session factory (Postgres metadata sage)."""
 from __future__ import annotations
 
 from collections.abc import AsyncIterator

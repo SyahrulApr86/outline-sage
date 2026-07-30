@@ -1,4 +1,3 @@
-"""Verifikasi signature webhook Outline (FR-02, TSD-001 bagian 8)."""
 from __future__ import annotations
 
 import hashlib

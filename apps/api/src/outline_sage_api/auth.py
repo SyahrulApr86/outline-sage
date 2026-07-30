@@ -1,4 +1,3 @@
-"""Verifikasi token OIDC Keycloak, reuse realm Outline (FR-09/FR-10, TSD-002 bagian 8)."""
 from __future__ import annotations
 
 import time

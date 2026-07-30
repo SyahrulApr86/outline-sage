@@ -1,4 +1,3 @@
-"""Klien vLLM (OpenAI-compatible) untuk generasi jawaban streaming (TSD-002 bagian 6, LLM Client)."""
 from __future__ import annotations
 
 from collections.abc import AsyncIterator

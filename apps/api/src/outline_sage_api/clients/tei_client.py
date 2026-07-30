@@ -1,4 +1,3 @@
-"""Klien TEI (text-embeddings-inference) untuk embedding dan reranker (TSD-001/TSD-002)."""
 from __future__ import annotations
 
 import httpx
@@ -10,7 +9,6 @@ class TEIEmbeddingClient:
         self._timeout = timeout
 
     async def embed_batch(self, texts: list[str]) -> list[list[float]]:
-        """Kirim seluruh teks dalam satu batch call (TSD-001 bagian 6, Embedding step)."""
         if not texts:
             return []
         async with httpx.AsyncClient(timeout=self._timeout) as client:
@@ -25,7 +23,6 @@ class TEIRerankerClient:
         self._timeout = timeout
 
     async def rerank(self, query: str, documents: list[str]) -> list[dict]:
-        """Return list {index, score} terurut dari paling relevan (TSD-002 bagian 6, Reranker)."""
         if not documents:
             return []
         async with httpx.AsyncClient(timeout=self._timeout) as client:

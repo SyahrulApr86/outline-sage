@@ -1,4 +1,3 @@
-"""Ekstraksi citation dari jawaban LLM (TSD-002 bagian 6, Citation Extractor)."""
 from __future__ import annotations
 
 import re
@@ -8,11 +7,8 @@ _CITATION_RE = re.compile(r"\[chunk-(\d+)\]")
 
 
 def extract_citations(answer_text: str, chunk_map: dict[int, dict[str, Any]]) -> list[dict[str, Any]]:
-    """Ekstrak label [chunk-n] yang benar-benar dikirim di context (chunk_map).
+    # label yang tidak ada di chunk_map (halusinasi LLM) diabaikan, bukan ditampilkan
 
-    Label yang tidak dikenal (halusinasi LLM menyebut chunk yang tidak ada di context)
-    diabaikan, tidak ditampilkan sebagai rujukan (FR-09, PRD-001).
-    """
     seen: set[int] = set()
     citations: list[dict[str, Any]] = []
     for match in _CITATION_RE.finditer(answer_text):

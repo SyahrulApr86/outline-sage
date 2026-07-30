@@ -1,4 +1,3 @@
-"""Repository conversation dan message, termasuk permission per user (FSD-002 AC-7)."""
 from __future__ import annotations
 
 import uuid

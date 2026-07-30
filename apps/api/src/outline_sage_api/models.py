@@ -1,4 +1,3 @@
-"""Model data Postgres metadata sage (TSD-001 bagian 4, TSD-002 bagian 4)."""
 from __future__ import annotations
 
 import uuid

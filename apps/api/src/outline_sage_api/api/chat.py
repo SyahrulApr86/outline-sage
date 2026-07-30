@@ -1,4 +1,3 @@
-"""Endpoint chat streaming dan riwayat percakapan (TSD-002 bagian 5, FSD-002, FSD-004)."""
 from __future__ import annotations
 
 import json

@@ -1,4 +1,3 @@
-"""Content-hash untuk deteksi chunk yang berubah (TSD-001 bagian 6, Content-hash Differ)."""
 from __future__ import annotations
 
 import hashlib
@@ -12,12 +11,7 @@ def diff_chunks(
     old_hashes: dict[int, str],
     new_chunks: dict[int, str],
 ) -> tuple[dict[int, str], list[int]]:
-    """Bandingkan chunk lama vs baru berdasar index dan content hash.
-
-    Return (to_embed, to_delete):
-      to_embed: {index: content_hash} untuk chunk baru atau berubah.
-      to_delete: index chunk yang ada di versi lama tapi tidak ada lagi di versi baru.
-    """
+    """Return (to_embed: {index: hash} baru/berubah, to_delete: index yang hilang di versi baru)."""
     to_embed: dict[int, str] = {}
     for index, content in new_chunks.items():
         new_hash = content_hash(content)

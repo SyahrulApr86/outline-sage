@@ -1,4 +1,3 @@
-"""Debounce per dokumen berbasis TTL Redis (TSD-001 bagian 6, Webhook Handler & Expiry Listener)."""
 from __future__ import annotations
 
 import redis.asyncio as redis

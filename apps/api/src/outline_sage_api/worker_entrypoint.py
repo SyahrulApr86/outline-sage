@@ -1,9 +1,3 @@
-"""Entry point proses Sync Worker terpisah dari API Service (HLD-001 bagian 2 & 4).
-
-Dijalankan sebagai container tersendiri supaya restart/scaling worker tidak
-mengganggu API Service yang melayani chat (konsisten dengan pola isolasi
-restart di FSD-003).
-"""
 from __future__ import annotations
 
 import asyncio
@@ -31,9 +25,7 @@ async def main() -> None:
     engine = create_engine(settings.database_url)
     session_factory = create_session_factory(engine)
 
-    # socket_timeout harus lebih besar dari BLOCK milidetik dipakai XREADGROUP
-    # di run_worker_loop, kalau tidak client timeout duluan sebelum server
-    # selesai menunggu (bukan error, tapi bikin worker crash loop tiap siklus poll).
+    # socket_timeout must exceed XREADGROUP's BLOCK duration in run_worker_loop
     redis_client = redis.from_url(settings.redis_url, decode_responses=True, socket_timeout=15)
     debouncer = Debouncer(redis_client, settings.debounce_window_seconds)
 
