@@ -97,7 +97,7 @@ async def _handle_delete(deps: SyncWorkerDeps, doc_id: str) -> None:
 
 
 async def _handle_upsert(deps: SyncWorkerDeps, doc_id: str) -> None:
-    doc_data = await deps.outline_client.export_document(doc_id)
+    doc_data = await deps.outline_client.get_document(doc_id)
     if not doc_data:
         logger.warning("document not found in Outline, skip doc_id=%s", doc_id)
         return

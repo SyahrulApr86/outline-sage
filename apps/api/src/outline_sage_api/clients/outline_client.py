@@ -15,17 +15,6 @@ class OutlineClient:
         self._base_url = base_url.rstrip("/")
         self._headers = {"Authorization": f"Bearer {api_token}", "Content-Type": "application/json"}
 
-    async def export_document(self, document_id: str) -> dict | None:
-        async with _build_client() as client:
-            resp = await client.post(
-                f"{self._base_url}/api/documents.export",
-                json={"id": document_id},
-                headers=self._headers,
-            )
-            if resp.status_code != 200:
-                return None
-            return resp.json().get("data")
-
     async def get_document(self, document_id: str) -> dict | None:
         async with _build_client() as client:
             resp = await client.post(

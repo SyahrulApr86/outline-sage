@@ -57,7 +57,7 @@ class FakeOutlineClient:
     def __init__(self, documents: dict[str, dict]) -> None:
         self._documents = documents
 
-    async def export_document(self, document_id: str) -> dict | None:
+    async def get_document(self, document_id: str) -> dict | None:
         return self._documents.get(document_id)
 
 
